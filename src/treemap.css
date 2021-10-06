@@ -1,0 +1,83 @@
+rect {
+    border: 1px solid transparent;
+    pointer-events: all;
+}
+rect:hover {
+    border: 1px solid black;
+}
+
+#tooltip {
+    position: absolute;
+    width: auto;
+    height: auto;
+    padding: 5px;
+    background-color: white;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+#tooltip:hover {
+    background-color: #aa4336;
+}
+
+
+#tooltip.hidden {
+    display: none;
+}
+
+#tooltip p {
+    margin: 0;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+.textdiv {
+    border: 1px solid transparent;
+    font-family: 'Roboto', "Open Sans",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    pointer-events: none;
+    overflow: none;    
+    word-wrap: break-word;
+    position: relative;
+    text-align: center;
+    top: 50%;
+    color: #fff;
+}
+
+.textdivMenu {
+    font-family: 'Roboto', "Open Sans",Helvetica,Arial,sans-serif;
+    font-size: 11px;
+    text-align: center;
+    color: #1a1a1a;
+}
+
+.textdiv:hover {
+    border: 1px solid #000;
+    stroke: black;
+}
+
+
+.foreignobj{
+    border: 1px solid transparent;
+    padding-left: 5px;
+    padding-top: 0px;
+    margin-top: 5px;
+    word-wrap: break-word;
+}
+
+
+.foreignobj:hover{  
+    border: 1px black;
+}
+
+.navigation{
+    white-space: nowrap;
+}

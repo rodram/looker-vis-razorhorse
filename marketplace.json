@@ -1,0 +1,19 @@
+{
+    "label": "Razorhorse Treemap v.1.0.1",
+    "category_label": "Plug-ins",
+    "branding": {
+        "image_url": "",
+        "tagline": "Treemap visualization plug-in."
+    },
+    "constants": {
+        "VIS_LABEL": {
+            "label": "Razorhorse Treemap v.1.0.1",
+            "description": "Treemap vis based on d3.js"
+        },
+        "VIS_ID": {
+            "label": "Razorhorse Treemap v.1.0.1",
+            "description": "Treemap visualization",
+            "value_constraint": "visualization"
+        }
+    }
+}
