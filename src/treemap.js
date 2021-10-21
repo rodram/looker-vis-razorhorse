@@ -1,7 +1,7 @@
 const d3v4 = require('./d3.v4')
 
 import './treemap.css';
-
+ 
 let d3 = d3v4;
 
 const default_options = {
