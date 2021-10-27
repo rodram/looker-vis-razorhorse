@@ -21,6 +21,14 @@ module.exports = {
       //   ],
       // },
     ]
-  }
+  },
+  devServer: {
+      contentBase: false,
+      compress: true,
+      port: 3443,
+      https: true
+  },
+  devtool: 'eval',
+  watch: true
 };
 

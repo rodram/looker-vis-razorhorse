@@ -7,10 +7,12 @@
   "author": "Edited by Rodrigo Ramos ",
   "license": "MIT",
   "devDependencies": {
+    "@webpack-cli/serve": "^1.6.0",
     "css-loader": "^3.6.0",
     "style-loader": "^1.2.1",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12"
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^4.3.1"
   },
   "dependencies": {
     "d3-collection": "^1.0.7",
@@ -20,6 +22,7 @@
     "d3-transition": "^1.3.2"
   },
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "start:dev": "webpack-dev-server"
   }
 }

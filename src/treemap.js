@@ -540,21 +540,16 @@ const vis = {
             
                     let label = cell
                     .append("text")
-                    .style("opacity", function(d) {
-                        if (d.depth == 1) return 1;
-                        return 0;
-                    })
+                    .style("opacity", "1")
                     .attr("clip-path", function(d,i) { return "url(#clip-" + i + ")"; })
-                    .attr("y", function(d) {
-                        return d.depth == 1 ? "13" : "10";
-                    })
-                    .attr("x", 2)
+                    .attr("y", function(d) { return d.depth == 1 ? "13" : "10"; })
+                    .attr("x", function(d) { return (d.x1 - d.x0) / 2 })
                     .style("font-family", "Helvetica, Arial, sans-serif")
                     .style("fill", "white")
                     .style("overflow", "visible")
                     .style("display", "block")
                     .style("font-size", function(d) {
-                        return d.depth == 1 ? "14px" : "10px";
+                        return d.depth == 1 ? "14px" : "20px";
                     })
                     .text(function(d) { 
                         return d.data.name == "root" ? "" : d.data.name; 
