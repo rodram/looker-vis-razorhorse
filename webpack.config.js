@@ -23,12 +23,15 @@ module.exports = {
     ]
   },
   devServer: {
-      contentBase: false,
-      compress: true,
-      port: 3443,
-      https: true
+    static: {
+      directory: path.join(__dirname, "/"),
+    },
+    https: true,
+    port: 3000,
+    devMiddleware: {
+      publicPath: "https://localhost:3000/",
+    },
+    hot: "only",
   },
-  devtool: 'eval',
-  watch: true
 };
 

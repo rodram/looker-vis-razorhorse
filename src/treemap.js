@@ -22,7 +22,7 @@ const default_options = {
         type: "array",
         display: "colors",
         label: "Color Palette - Razorhorse",
-        default: ["#AA4436", "#AA5347", "#AA6258", "#AA7169", "#AA807A", "#AA8F8B", "#AA9E9C", "#AAADAD", "#AABCBE", "#AACBCF"]
+        default: ["#dd3333", "#80ce5d", "#f78131", "#369dc1", "#c572d3", "#36c1b3", "#b57052", "#ed69af"]
     },
     breadcrumbs: {
         type: "array",
@@ -36,7 +36,15 @@ const default_options = {
         label: "Color Range",
         display: "colors",
         default: ["#dd3333", "#80ce5d", "#f78131", "#369dc1", "#c572d3", "#36c1b3", "#b57052", "#ed69af"],
-    }
+    },
+    options: {
+        color_range: {
+          type: "array",
+          label: "Color Range",
+          display: "colors",
+          default: ["#dd3333", "#80ce5d", "#f78131", "#369dc1", "#c572d3", "#36c1b3", "#b57052", "#ed69af"],
+        }
+    },
 }
   
 var clickedOnce = false;
@@ -48,6 +56,7 @@ const formatValue = function(number) {
 }
 
 const convertQueryDatasetToTreeData = function(data, queryResponse) {
+
     var vis_data = [];
     data.forEach(d => {
         var row = {};
@@ -71,7 +80,7 @@ const convertQueryDatasetToTreeData = function(data, queryResponse) {
                 label: field_label,
                 rendered: render,
                 links: value.links,
-            }
+            }           
             idx += 1;
         }
         vis_data.push(row);
@@ -116,22 +125,22 @@ const getNewConfigOptions = function(dimensions, measures) {
         default: "0",
     }
 
-    var color_by_options = [];
-    for (var i = 0; i < dimensions.length; i++) {
-        var option = {};
-        option[dimensions[i].label] = dimensions[i].name;
-        color_by_options.push(option)
-    }
+    // var color_by_options = [];
+    // for (var i = 0; i < dimensions.length; i++) {
+    //     var option = {};
+    //     option[dimensions[i].label] = dimensions[i].name;
+    //     color_by_options.push(option)
+    // }
     // color_by_options.push({"Color by Value (TBD)": "color_by_value"});
 
-    new_options["colorBy"] = {
-        section: "Data",
-        type: "string",
-        label: "Color By",
-        display: "select",
-        values: color_by_options,
-        default: "0",
-    }
+    // new_options["colorBy"] = {
+    //     section: "Data",
+    //     type: "string",
+    //     label: "Color By",
+    //     display: "select",
+    //     values: color_by_options,
+    //     default: "0",
+    // }
 
     return new_options;
 }
@@ -181,8 +190,8 @@ const vis = {
         const dimensions = queryResponse.fields.dimension_like;
         const measures = queryResponse.fields.measure_like;
 
-        // const new_options = getNewConfigOptions(dimensions, measures);
-        // vis.trigger("registerOptions", new_options);
+        const new_options = getNewConfigOptions(dimensions, measures);
+        vis.trigger("registerOptions", new_options);
 
         const vis_data = convertQueryDatasetToTreeData(data, queryResponse);
         const hierarchy_names = getHierarchyNames(queryResponse);
@@ -190,19 +199,18 @@ const vis = {
 
         // console.log("config.color_range", config.color_range)
         const color_range = config.color_range;
-
         let color = d3.scaleOrdinal().range(color_range)
   
         data.forEach(function(row) {
             row.taxonomy = dimensions.map(function(dim) {return row[dim.name].value})
         });
         
-        var current_branch = config.current_branch || undefined;
+        var current_branch;
 
         let treemap = d3.treemap()
           .size([width, height-16])
-          .tile(d3.treemapSquarify.ratio(1))
-          .paddingOuter(1)
+          .tile(d3.treemapSquarify.ratio(3))
+          .paddingOuter(3)
           .paddingTop(function(d) {
                     if (config.showSubHeaders) {
                         return d.depth < number_of_headers ? 16 : 0
@@ -231,9 +239,7 @@ const vis = {
         }
 
         const getTooltip = function(d) {
-            // console.log("getTooltip", d)
-            // console.log("hierarchy_names", hierarchy_names)
-            // console.log("measures", measures)
+
             var dme
             if( d.data.data){
                 dme = d.data.data
@@ -241,42 +247,38 @@ const vis = {
             else{
                 dme = d.data
             }
-
-            console.log("dme", dme, d)
-
             var tiptext = "";
             if (d.height === 0) {
                 let p = 0
-                for (var prop in hierarchy_names) {
+                let l = 0
+                let s = ''
+                for (var prop in hierarchy_names) {                   
                     var metadata = dme[hierarchy_names[prop]];
-                    console.log("0 metadata", metadata)
+                
                     if( p > 0){
-                        if(metadata !== null){
-                            console.log("1 metadata", metadata)
-                            if(metadata.value !== null){    
-                                tiptext += metadata.value + " &#187; "; //<p><em>" + metadata.label + ":</em> 
+                        if(metadata !== null){                           
+                            if(metadata !== null){    
+                                if(l > 1){
+                                    s = " &#187; "
+                                }
+                                tiptext += s + metadata + "";                                
                             }
                         }
                     }
                     p++
+                    l++
                 }
-                tiptext += '<br>'
-                for (var measure in measures) {
-                    var metadata = dme[measure_names[measure]];
-                    console.log("2 metadata", metadata)
-                    if(metadata.rendered !== null){
-                        //<p><em>" + d.data.data.name + ":</em> <b>
-                        tiptext += "<b>" + metadata.rendered + "</b></p>";
-                    }                    
-                }
+                tiptext += '<br>'               
+                tiptext += "<b> &#187; " + dme["metadata"]["account.total_revenue"]["rendered"] + " </b></p>";
+
             } else {
                 // if(d.data.key == "null"){
                 //     tiptext += "";
                 // }else{
                 //     tiptext += d.data.name;
                 // }
-                if(d.data.name !== "root"){
-                    tiptext += d.data.name;
+                if(d.data.key !== "root"){
+                    tiptext += d.data.key;
                 }
                
                     
@@ -343,7 +345,26 @@ const vis = {
             return divName
         }
 
+        const getBoxTipAmount = function(d) {
+
+            
+            var dme
+            if( d.data.data){
+                dme = d.data.data
+            }
+            else{
+                dme = d.data            }
+            var tiptext = "";
+            if (d.height === 0) {
+                tiptext +=  dme["metadata"]["account.total_revenue"]["rendered"] 
+            } 
+            
+            return tiptext;
+        }
+
         const getBoxTip = function(d) {
+
+            
             var dme
             if( d.data.data){
                 dme = d.data.data
@@ -351,52 +372,52 @@ const vis = {
             else{
                 dme = d.data
             }
-
-            console.log("dme", dme, d)
-
             var tiptext = "";
-            if (d.height === 0) {
+            if (d.depth > 1) {
                 let p = 0
-                for (var prop in hierarchy_names) {
+                let l = 0
+                let s = ''
+                for (var prop in hierarchy_names) {                   
                     var metadata = dme[hierarchy_names[prop]];
-                    console.log("0 metadata", metadata)
+                
                     if( p > 0){
-                        if(metadata !== null){
-                            console.log("1 metadata", metadata)
-                            if(metadata.value !== null){    
-                                tiptext += metadata.value + " &#187; "; //<p><em>" + metadata.label + ":</em> 
+                        if(metadata !== null){                           
+                            if(metadata !== null){    
+                                if(l > 1){
+                                    s = " &#187;"
+                                }
+                                tiptext += s + metadata;                                
                             }
                         }
                     }
                     p++
+                    l++
                 }
-                // tiptext += '<br>'
-                // for (var measure in measures) {
-                //     var metadata = dme[measure_names[measure]];
-                //     console.log("2 metadata", metadata)
-                //     if(metadata.rendered !== null){
-                //         //<p><em>" + d.data.data.name + ":</em> <b>
-                //         tiptext += "<b>" + metadata.rendered + "</b></p>";
-                //     }                    
-                // }
-            } else {
-                // if(d.data.key == "null"){
-                //     tiptext += "";
-                // }else{
-                //     tiptext += d.data.name;
-                // }
-                if(d.data.name !== "root"){
-                    tiptext += d.data.name;
+            }
+
+            if(d.depth === 1){
+                tiptext = ''
+                //console.log("d.data.key", d.data.key)
+                if(d.data.key){
+                    tiptext = d.data.key
                 }
-               
-                    
-            };
+                
+            }
+    
+            if(d.depth === 0){
+                tiptext = ''
+                //console.log("d.data.key", d.data.key)
+                if(d.data.key){
+                    tiptext = d.data.key === "root" ? "" :  d.data.key +" -" + ' One click to toogle filter, doubleclick to navigate, right click to open the drill down list from Looker'
+                }
+                
+            }
             
             return tiptext;
         }
 
         const createTreemap = function(data, vis) {
-            
+                        
             let d3 = d3v4;
 
             var nested_data = d3.nest();
@@ -406,19 +427,15 @@ const vis = {
             nested_data = {
                 "key": "root",
                 "values": nested_data,
-            }
-           
-            // var root = treemap(
-            //     d3.hierarchy(nested_data, d => d.values)
-            //         .sum(d => getSize(d))
-            //         .sort(function(a, b) { return b.height - a.height || getSize(b) - getSize(a)} )
-            // );
+            }         
 
-            let root = d3.hierarchy(burrow(data))
-            .sum(function(d) { return ("data" in d) ? d.data[measure.name].value : 0; });
+            let root = d3.hierarchy(nested_data, d => d.values)
+            .sum(d => getSize(d))
+            .sort(function(a, b) { return b.height - a.height || getSize(b) - getSize(a)} )
             treemap(root);
 
             const displayChart = function(d) {
+
 
                 let svg = that._svg
                     .html("")
@@ -428,10 +445,11 @@ const vis = {
                     .attr("transform", "translate(0,16)");
             
                 let breadcrumb = svg.append("text")
-                    .attr("y", -5)
-                    .attr("x", 4);
-              
-                //treemap(root);
+                    .attr("y", 0)
+                    .attr("x", 4)
+                    .style("font-family", "Helvetica, Arial, sans-serif")
+                    .style("font-size", "10px")
+
                 let cell = svg.selectAll(".node")
                     .data(root.descendants())
                     .enter()                    
@@ -443,7 +461,7 @@ const vis = {
                     
                     .on("click", function(d) {                        
                         if (clickedOnce) {
-                            //run_on_double_click(d);
+                            run_on_double_click(d);
                         } else {
                             timer = setTimeout(function() {
                                 run_on_simple_click(d);
@@ -451,21 +469,23 @@ const vis = {
                                 clickedOnce = true;                        
                         }
                     })
-                    .on("mouseenter", function(d) {
-                        let ancestors = d.ancestors();
-                        breadcrumb.text(ancestors.map(function(p) { return p.data.name }).slice(0,-1).reverse().join("-") + ": " + format(d.value));
-                        svg.selectAll("g.node rect")
-                        .style("stroke", null)
-                        .filter(function(p) {
-                            return ancestors.indexOf(p) > -1;
-                        })
-                        .style("stroke", function(p) {
-                            let scale = d3.scaleLinear()
-                            .domain([1,12])
-                            .range([color(d.ancestors().map(function(p) { return p.data.name }).slice(-2,-1)),"#ddd"])
-                            return "#fff";
-                        });
-                    })
+                    // .on("mouseenter", function(d) {
+
+                    //     let ancestors = d.ancestors();
+                    //     //breadcrumb.text(ancestors.map(function(p) { return p.data.key === 'null' ? '' : p.data.key  }).slice(0,-1).reverse().join(" - ") + ": " + format(d.value));
+                    //     svg.selectAll("g.node rect")
+                    //     .style("stroke", null)
+                        
+                    //     .filter(function(p) {
+                    //         return ancestors.indexOf(p) > -1;
+                    //     })
+                    //     .style("stroke", function(p) {
+                    //         let scale = d3.scaleLinear()
+                    //         .domain([1,12])
+                    //         .range([color(d.ancestors().map(function(p) { return p.data.label  }).slice(-2,-1)),"#ddd"])
+                    //         return "#fff";
+                    //     });
+                    // })
                     .on("mouseover", function(d) {
 
                         var pageX = d3.event.pageX
@@ -473,25 +493,31 @@ const vis = {
                     
                         var xPosition = pageX;
                         var yPosition = pageY;
+                        
+                        console.log("d", d)
 
-                        d3.select("#tooltip")
+                        if(d.depth > 1 ){
+                            d3.select("#tooltip")
                             .style("left", xPosition + "px")
                             .style("top", yPosition + "px")                   
-                            .html(getTooltip(d));
-
-                        d3.select("#tooltip").classed("hidden", false)
-                        d3.select(this).style('stroke', 'white');
-                        d3.select(this).style('stroke-width', '6');
-
+                            .html(getTooltip(d))
+                            d3.select("#tooltip").classed("hidden", false)
+                            d3.select(this).style('stroke', 'white');
+                            d3.select(this).style('stroke-width', '2');
+                        }
+                       
+                        //d3.select(this).html().style('text-stroke', 'none');
                     })
-                    .on("mousemove", function() {
+                    .on("mousemove", function(d) {
                         var xPosition = d3.event.pageX < chartCentreX ? d3.event.pageX : d3.event.pageX - 210
                         var yPosition = d3.event.pageY < chartCentreY ? d3.event.pageY : d3.event.pageY - 120
 
                         if (xPosition )
-                        d3.select('#tooltip')
+                        if(d.depth > 1 ){ 
+                            d3.select('#tooltip')
                             .style('left', xPosition + 'px')
                             .style('top', yPosition + 'px')    
+                        }
                     })
                     .on("mouseout", function() {
                         d3.select("#tooltip").classed("hidden", true);
@@ -504,7 +530,7 @@ const vis = {
                         console.log("contextmenu", d)
                         let measure = measures[0].name
                         LookerCharts.Utils.openDrillMenu({
-                            links: d.data.data[measure].links,
+                            links: d.data.metadata[measure].links,
                             event: event
                         }) 
                     })
@@ -518,43 +544,52 @@ const vis = {
             
                     cell.append("rect")
                         .attr("id", function(d,i) { return "rect-" + i; })
-                        .attr("width", function(d) { return d.x1 - d.x0; })
-                        .attr("height", function(d) { return d.y1 - d.y0; })
+                        .attr("width", function(d) { return  (d.x1 - d.x0)  })
+                        .attr("height", function(d) { return (d.y1 - d.y0) })
                         .style("fill", function(d) {
                         if (d.depth == 0) return "none";
-                        let scale = d3.scaleLinear()
+                            let scale = d3.scaleLinear()
                             .domain([1,6.5])
                             .range([color(d.ancestors().map(function(p) { 
-                                return p.data.name 
+                                return p.data.key 
                             }).slice(-2,-1)),"#ddd"])
                             return scale(d.depth);
-                        })
-                    // .append("xhtml:div")
-                    //     .html(d => getCellText(d))
-                    //     .attr("class", (d) => getDivName(d))
+                        }) 
                         
                     cell.append("clipPath")
                         .attr("id", function(d,i) { return "clip-" + i; })
                         .append("use")
                         .attr("xlink:href", function(d,i) { return "#rect-" + i; });
             
-                    let label = cell
-                    .append("text")
-                    .style("opacity", "1")
-                    .attr("clip-path", function(d,i) { return "url(#clip-" + i + ")"; })
-                    .attr("y", function(d) { return d.depth == 1 ? "13" : "10"; })
-                    .attr("x", function(d) { return (d.x1 - d.x0) / 2 })
-                    .style("font-family", "Helvetica, Arial, sans-serif")
-                    .style("fill", "white")
-                    .style("overflow", "visible")
-                    .style("display", "block")
-                    .style("font-size", function(d) {
-                        return d.depth == 1 ? "14px" : "20px";
-                    })
-                    .text(function(d) { 
-                        return d.data.name == "root" ? "" : d.data.name; 
-                    });
-                
+                    cell
+                        .append("text")
+                        .style("opacity", "1")
+                        .attr("clip-path", function(d,i) { return "url(#clip-" + i + ")"; })
+                        .attr("y", function(d) { return d.depth > 1 ? 30 : 12 })
+                        .attr("x", function(d) { return 10})
+                        .style("font-family", "Helvetica, Arial, sans-serif")
+                        .style("fill", function(d) {
+                            return d.depth === 0 ? "black" : "white";
+                        })       
+                        .style("font-size", function(d) {
+                            return d.depth > 1 ? "20px" : "14px";
+                        })
+                        .html(function(d) {            
+                            return getBoxTip(d)  
+                        })
+                    cell
+                        .append("text")
+                        .attr("y", function(d) { return d.depth > 1 ? 50 : 12 })
+                        .attr("x", function(d) { return 10})
+                        .style("font-family", "Helvetica, Arial, sans-serif")
+                        .style("fill", "white")       
+                        .style("font-size", function(d) {
+                            return d.depth > 1 ? "15px" : "13px";
+                        })
+                        .html(function(d) { 
+                            return getBoxTipAmount(d); 
+                        })
+
                 function run_on_simple_click(d) { 
                             
                     console.log("simpleclick");
@@ -562,38 +597,39 @@ const vis = {
                     let data = ''
                     let filterLevel = ''
 
-                    console.log("d", d)
+                    console.log("d",  d.data["taxonomy.sub_sector_level_3"])
 
                     if(d.depth === 4)
                     {
                         filterLevel = "taxonomy.sub_sector_level_3"
                         data = {
-                            [filterLevel] : { value: d.data.data[filterLevel].value}
+                            [filterLevel] : { value: d.data[filterLevel]}
                         }
                     }
                     if(d.depth === 3)
                     {
                         filterLevel = "taxonomy.sub_sector_level_3"
                         data = {
-                            [filterLevel] : { value: d.data.data[filterLevel].value}
+                            [filterLevel] : { value: d.data[filterLevel]}
                         }
                     }
                     if(d.depth === 2)
                     {
                         filterLevel = "taxonomy.sub_sector_level_4"
                         data = {
-                            [filterLevel] : { value: d.data.name}
+                            [filterLevel] : { value: d.data[filterLevel]}
                         }
                     }
                     if(d.depth === 1)
                     {
                         filterLevel = "taxonomy.sub_sector_level_2"
                         data = {
-                            [filterLevel] : { value: d.data.name}
+                            [filterLevel] : { value:  d.data[filterLevel]}
                         }
                     }
 
-                    if (details.crossfilterEnabled) {                                   
+                    if (details.crossfilterEnabled) {           
+                        console.log({row: data})                        
                         LookerCharts.Utils.toggleCrossfilter({row: data})
                     }         
 
@@ -602,11 +638,7 @@ const vis = {
                                 
                 function run_on_double_click(d) {
                     clickedOnce = false;
-                    clearTimeout(timer);         
-                    console.log("d", d)
-                    console.log("currentBranch", current_branch)
-                    console.log("vis", vis.trigger("updateConfig", [{current_branch: d}]))    
-                    console.log("currentBranch", current_branch)             
+                    clearTimeout(timer);                               
                     zoom(d)      
                 }                    
 
@@ -614,46 +646,39 @@ const vis = {
                 function zoom(d) {
                     
                     console.log("zoom", d)
-
+                    
                     while (d.depth > 1) {
                         d = d.parent;
                     }
 
-                    // root = treemap(d3.hierarchy(d.data, d => d.values)
-                    //     .sum(d => getSize(d)))
                     
-                    // updateCurrentBranch(nested_data, config.breadcrumbs.slice(0));
-                    // root = treemap(d3.hierarchy(current_branch, d => d.values)
-                    //            .sum(d => getSize(d)))
-                    // displayChart(root);
-
-                    
-                    // if (d.depth === 0) {
-                    //     if (config.breadcrumbs.length === 0) {
-                    //         // zoom cancelled, already at root node
-                    //     } else {
-                    //         config.breadcrumbs.pop();
-                    //         // zoom up
-                    //         updateCurrentBranch(nested_data, config.breadcrumbs.slice(0));
+                    if (d.depth === 0) {
+                        if (config.breadcrumbs.length === 0) {
+                            // zoom cancelled, already at root node
+                        } else {
+                            config.breadcrumbs.pop();
+                            // zoom up
+                            updateCurrentBranch(nested_data, config.breadcrumbs.slice(0));
         
-                    //         root = treemap(d3.hierarchy(current_branch, d => d.values)
-                    //             .sum(d => getSize(d)))
-                    //         displayChart(root);
-                    //     }
-                    // } else {
-                    //     while (d.depth > 1) {
-                    //         d = d.parent;
-                    //     }
-                    //     if (d.data.key != null) {
-                    //         config.breadcrumbs.push(d.data.key);
-                    //         // zoom down
-                                                   
-                    //     }
-                    //     root = treemap(d3.hierarchy(d.data, d => d.values)
-                    //             .sum(d => getSize(d))
-                    //         );                                
-                    //         displayChart(root);     
-                    // }
+                            root = treemap(d3.hierarchy(current_branch, d => d.values)
+                                .sum(d => getSize(d)))
+                            displayChart(root);
+                        }
+                    } else {
+                        while (d.depth > 1) {
+                            d = d.parent;
+                        }
+                        if (d.data.key != null) {
+                            config.breadcrumbs.push(d.data.key);
+                            // zoom down
+                            root = treemap(d3.hierarchy(d.data, d => d.values)
+                                .sum(d => getSize(d))
+                            );                     
+                            updateCurrentBranch(nested_data, config.breadcrumbs.slice(0));          
+                            displayChart(root);                            
+                        }
+                        
+                    }
                 }
 
             }
@@ -661,54 +686,58 @@ const vis = {
             displayChart(root);
         }
 
-        createTreemap(data, vis, data);
+        //console.log(">>"+ current_branch ? current_branch : vis_data)
 
-        function burrow(table) {
-            console.log("burrow", table)
-            // create nested object
-            let obj = {};
-            table.forEach(function(row) {
-                // start at root
-                let layer = obj;
-        
-                // create children as nested objects
-                row.taxonomy.forEach(function(key) {
-                    layer[key] = key in layer ? layer[key] : {};
-                    layer = layer[key];
-                });
-                layer.__data = row;
-                });
-        
-                // recursively create children array
-                let descend = function(obj, depth) {
-                let arr = [];
-                depth = depth || 0;
-                for (let k in obj) {
-                    if (k == "__data") { continue; }
-                    let child = {
-                    name: k,
-                    depth: depth,
-                    children: descend(obj[k], depth+1)
-                    };
-                    if ("__data" in obj[k]) {
-                    child.data = obj[k].__data;
-                    }
-                    arr.push(child);
-                }
-                return arr;
-            };
-    
-            // use descend to create nested children arrys
-            return {
-                name: "root",
-                children: descend(obj, 1),
-                depth: 0
-            }
-        };    
+        createTreemap(current_branch ? current_branch : vis_data, vis);
+
+          
     }
 }
 
 looker.plugins.visualizations.add(vis);
+
+// function burrow(table) {
+//     //console.log("burrow", table)
+//     // create nested object
+//     let obj = {};
+//     table.forEach(function(row) {
+//         // start at root
+//         let layer = obj;
+
+//         // create children as nested objects
+//         row.taxonomy.forEach(function(key) {
+//             layer[key] = key in layer ? layer[key] : {};
+//             layer = layer[key];
+//         });
+//         layer.__data = row;
+//         });
+
+//         // recursively create children array
+//         let descend = function(obj, depth) {
+//         let arr = [];
+//         depth = depth || 0;
+//         for (let k in obj) {
+//             if (k == "__data") { continue; }
+//             let child = {
+//             name: k,
+//             depth: depth,
+//             children: descend(obj[k], depth+1)
+//             };
+//             if ("__data" in obj[k]) {
+//             child.data = obj[k].__data;
+//             }
+//             arr.push(child);
+//         }
+//         return arr;
+//     };
+
+//     // use descend to create nested children arrys
+//     return {
+//         name: "root",
+//         children: descend(obj, 1),
+//         depth: 0
+//     }
+// }; 
 
 function formatType(valueFormat) {
     if (typeof valueFormat != "string") {
