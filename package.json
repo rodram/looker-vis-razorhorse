@@ -1,5 +1,5 @@
 {
-  "name": "vis-treemap",
+  "name": "looker-vis-razorhorse",
   "version": "0.1.0",
   "description": "treemap vis for Looker",
   "main": "treemap.js",
