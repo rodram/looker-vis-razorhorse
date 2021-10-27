@@ -1,4 +1,4 @@
-project_name: "vis-treemap"
+project_name: "looker-vis-razorhorse"
 
 visualization: {
     id: "Razorhorse treemap"
