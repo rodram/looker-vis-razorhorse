@@ -4,7 +4,7 @@
   "description": "treemap vis for Looker",
   "main": "treemap.js",
   "repository": "https://github.com/rodram/looker-vis-razorhorse",
-  "author": "Edited by Rodrigo Ramos",
+  "author": "Edited by Rodrigo Ramos ",
   "license": "MIT",
   "devDependencies": {
     "css-loader": "^3.6.0",
