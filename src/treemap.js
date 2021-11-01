@@ -356,7 +356,7 @@ const vis = {
                 dme = d.data            }
             var tiptext = "";
             if (d.height === 0) {
-                tiptext +=  dme["metadata"]["account.total_revenue"]["rendered"] 
+                //tiptext +=  dme["metadata"]["account.total_revenue"]["rendered"] 
             } 
             
             return tiptext;
@@ -406,9 +406,12 @@ const vis = {
     
             if(d.depth === 0){
                 tiptext = ''
-                //console.log("d.data.key", d.data.key)
-                if(d.data.key){
-                    tiptext = d.data.key === "root" ? "" :  d.data.key +" -" + ' One click to toogle filter, doubleclick to navigate, right click to open the drill down list from Looker'
+                console.log("d.data.key", d.data.key)
+                if(d.data.key === "root"){
+                    tiptext = 'One click to toogle filter, doubleclick to navigate, right click to open the drill down list from Looker'
+                }
+                else{
+                    tiptext = d.data.key + ' - One click to toogle filter, doubleclick to navigate, right click to open the drill down list from Looker'
                 }
                 
             }
@@ -565,8 +568,8 @@ const vis = {
                         .append("text")
                         .style("opacity", "1")
                         .attr("clip-path", function(d,i) { return "url(#clip-" + i + ")"; })
-                        .attr("y", function(d) { return d.depth > 1 ? 30 : 12 })
-                        .attr("x", function(d) { return 10})
+                        .attr("y", function(d) { return d.depth > 1 ? (d.y1 - d.y1 / 2) : 12   }) //d.depth > 1 ? 30 : 12 })
+                        .attr("x", function(d) { return d.depth > 1 ? (d.x1 - d.x1 / 1.7) : 10 }) //(d.y1 - d.y1 / 2)
                         .style("font-family", "Helvetica, Arial, sans-serif")
                         .style("fill", function(d) {
                             return d.depth === 0 ? "black" : "white";
