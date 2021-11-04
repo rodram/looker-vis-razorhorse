@@ -452,6 +452,8 @@ const vis = {
                     .attr("x", 4)
                     .style("font-family", "Helvetica, Arial, sans-serif")
                     .style("font-size", "10px")
+                
+                let xx = (d.x1 - d.x0)
 
                 let cell = svg.selectAll(".node")
                     .data(root.descendants())
@@ -568,17 +570,27 @@ const vis = {
                         .append("text")
                         .style("opacity", "1")
                         .attr("clip-path", function(d,i) { return "url(#clip-" + i + ")"; })
-                        .attr("y", function(d) { return d.depth > 1 ? (d.y1 - d.y1 / 2) : 12   }) //d.depth > 1 ? 30 : 12 })
-                        .attr("x", function(d) { return d.depth > 1 ? (d.x1 - d.x1 / 1.7) : 10 }) //(d.y1 - d.y1 / 2)
+
+                        .attr("y", function(d) { return d.depth > 3 ? 25 : 12   }) 
+                        //d.depth > 1 ? 30 : 12 }) //(d.y1 - d.y1 / 2) 
+                        .attr("x", function(d) { return d.depth > 3 ? 10 : 10 }) 
+                        //(d.y1 - d.y1 / 2) // (d.x1 - d.x1 / 1.7)
+
                         .style("font-family", "Helvetica, Arial, sans-serif")
                         .style("fill", function(d) {
                             return d.depth === 0 ? "black" : "white";
                         })       
                         .style("font-size", function(d) {
-                            return d.depth > 1 ? "20px" : "14px";
+                            return d.depth > 1 ? "15px" : "14px";
                         })
-                        .html(function(d) {            
-                            return getBoxTip(d)  
+                        .html(function(d) {          
+                            if(d.depth === 0){
+                                return getBoxTip(d)  
+                            }  
+                            if(d.depth > 3){
+                                return getBoxTip(d)  
+                            }
+                                
                         })
                     cell
                         .append("text")
